@@ -29,7 +29,7 @@ module.exports = function(grunt) {
           main: false
         },
         src: ["src/Tutorial/Ractive/*.purs", "<%=libFiles%>"],
-        dest: "html/js/demo.js"
+        dest: "js/demo.js"
       }
     },
 
@@ -55,8 +55,8 @@ module.exports = function(grunt) {
       main: {
         options: {},
         files: {
-          'html/templates/tut1/content.html': ['src/stencil/tut1/content.dot.html'],
-          'html/templates/tut2/content.html': ['src/stencil/tut2/content.dot.html'],
+          'templates/tut1/content.html': ['src/stencil/tut1/content.dot.html'],
+          'templates/tut2/content.html': ['src/stencil/tut2/content.dot.html'],
         }
       }
     }
