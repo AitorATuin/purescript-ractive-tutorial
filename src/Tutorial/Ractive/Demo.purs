@@ -31,7 +31,7 @@ template element template baseUri dir = {contentTemplate: content, outputTemplat
     output  = baseUri ++ "/" ++ dir ++ "/" ++ "output.html"
 
 templateTuto :: URI -> TutorialConfig
-templateTuto = template ractiveElement ractiveTemplate "http://localhost/templates"
+templateTuto = template ractiveElement ractiveTemplate "http://aitoratuin.github.io/purescript-ractive-tutorial/templates"
 
 templateTuto1 :: TutorialConfig
 templateTuto1 = templateTuto "tut1"

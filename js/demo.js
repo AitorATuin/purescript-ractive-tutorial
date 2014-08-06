@@ -9636,7 +9636,7 @@ PS.Tutorial_Ractive_Demo = (function () {
             };
         };
     };
-    var templateTuto = template(Tutorial_Ractive.ractiveElement)(Tutorial_Ractive.ractiveTemplate)("http://localhost/templates");
+    var templateTuto = template(Tutorial_Ractive.ractiveElement)(Tutorial_Ractive.ractiveTemplate)("http://aitoratuin.github.io/purescript-ractive-tutorial/templates");
     var templateTuto1 = templateTuto("tut1");
     var getFrom = function (url) {
         return Prelude.flip(Prelude.flip(Network_XHR.get)(url))({});
