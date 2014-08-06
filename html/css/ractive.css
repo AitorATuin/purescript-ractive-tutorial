@@ -1,0 +1,53 @@
+.with-label::before {
+  color: #959595;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+}
+
+.output {
+  min-height: 100px;
+}
+
+#output::before  {
+  content: "Output";
+  position: relative;
+  top: -40px;
+  left: -20px;
+}
+
+.execute::before {
+  content: "Execute!"
+}
+
+.ractive-example {
+  padding-top: 20px;
+}
+
+.panel-heading {
+  height: 40px;
+}
+
+.panel-heading > .btn-run {
+  position: relative;
+  top: -7px;
+}
+
+#output {
+  position: fixed;
+  width: 30%;
+}
+
+nav li {
+  display: inline-block;
+}
+
+nav li div {
+  display: inline-block;
+  border-radius: 50%;
+  height: 40px;
+  width: 40px;
+  margin-right: 20px;
+  border: 1px solid #333;
+  text-align: center;
+  font-size: 25px;
+}

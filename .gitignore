@@ -1,0 +1,10 @@
+.*
+!/.bowerrc
+!/.gitignore
+!/.travis.ym
+/output/
+/node_modules/
+/bower_components/
+/tmp/
+html/js/demo.js
+html/templates/tut*/content.html
