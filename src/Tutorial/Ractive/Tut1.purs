@@ -58,29 +58,35 @@ tutorial1Run1 partials r event = do
   set "showOutput" true r
 
 tutorial1Fn :: TutorialFn
-tutorial1Fn partials = ContT \_ -> do
+tutorial1Fn partials = ContT \next -> do
   trace "Tutorial 1 starting"
   r <- createRactive {outputP: "", contentP: partials.contentP} {}
   on "run1" (tutorial1Run1 partials) r
   trace "Tutorial 1 Done"
+  next unit
 
 -- Tutorial 2
 tutorial2Run1 partials r event = do
   set "showOutput" false r
+  set "name" "Värld" r
+  set "greetings" "Hej, hej" r
   setPartial "outputP" partials.outputP r
   set "showOutput" true r
 
-tutorial2Run2 r ev = do
+tutorial2Run2 partials r event = do
+  set "showOutput" false r
   set "name" "Mundo" r
   set "greetings" "Hola" r
+  set "showOutput" true r
 
 tutorial2Fn :: TutorialFn
-tutorial2Fn partials = ContT \_ -> do
+tutorial2Fn partials = ContT \next -> do
   trace "Tutorial 2 Starting"
   r <- createRactive partials {name: "Värld", greetings:"Hej, hej"}
   on "run1" (tutorial2Run1 partials) r
-  on "run2" tutorial2Run2 r
+  on "run2" (tutorial2Run2 partials) r
   trace "Tutorial 2 Done"
+  next unit
 
 tutorial2 = Tutorial "tut2" tutorial2Fn
 

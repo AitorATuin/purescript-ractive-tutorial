@@ -14,6 +14,11 @@ import Network.XHR
 import Tutorial.Ractive
 import Data.Array (filter, map)
 import Data.String (fromCharCode)
+import Data.DOM.Simple.Window (globalWindow, document)
+import Data.DOM.Simple.Element (querySelector, classToggle)
+import Data.DOM.Simple.Events (addEventListener)
+import Data.DOM.Simple.Document
+import qualified Data.DOM.Simple.Types as DT
 
 tutorialPartials :: Template -> Template -> TutorialPartials
 tutorialPartials output content = {outputP: output, contentP: content}
@@ -31,7 +36,7 @@ template element template baseUri dir = {contentTemplate: content, outputTemplat
     output  = baseUri ++ "/" ++ dir ++ "/" ++ "output.html"
 
 templateTuto :: URI -> TutorialConfig
-templateTuto = template ractiveElement ractiveTemplate "http://aitoratuin.github.io/purescript-ractive-tutorial/templates"
+templateTuto = template ractiveElement ractiveTemplate "templates"
 
 templateTuto1 :: TutorialConfig
 templateTuto1 = templateTuto "tut1"
@@ -56,20 +61,29 @@ loadTutorial :: forall e. TutorialConfig -> Unit -> ContT Unit (Eff (ractiveM::R
 loadTutorial config = outputPartialTut config.outputTemplate >=>
   contentPartialTut config.contentTemplate
 
-launch :: forall a e. Tutorial a (xhr :: XHR, trace :: Trace, ractiveM :: Ract.RactiveM | e) -> Eff (xhr :: XHR, trace :: Trace, ractiveM :: Ract.RactiveM | e) Unit
+setOutputCloseButton :: forall e. Unit -> ContT Unit (Eff (trace::Trace,dom::DT.DOM|e)) Unit
+setOutputCloseButton = \_ -> ContT \_ -> do
+  doc <- document globalWindow
+  closeOutputBtn <- querySelector "#output-btn-close" doc
+  outputPanel <- querySelector "#output" doc
+  flip (addEventListener "click") closeOutputBtn \ev -> do
+    classToggle "hidden" outputPanel
+    trace "Cerrando ventana!"
+
+launch :: forall e. Tutorial Unit (xhr :: XHR, trace :: Trace, ractiveM :: Ract.RactiveM, dom :: DT.DOM | e) -> Eff (xhr :: XHR, trace :: Trace, ractiveM :: Ract.RactiveM, dom::DT.DOM| e) Unit
 launch (Tutorial name tutorialF) = runContT (executeTutorial unit) $ \r ->
   trace "DONE"
   where
-    executeTutorial = loadTutorial (templateTuto name) >=> tutorialF
+    executeTutorial = loadTutorial (templateTuto name) >=> tutorialF >=> setOutputCloseButton
 
-init tutorials = do
+initTutorials tutorials = do
   r <- Ract.ractive "#ractive-nav-template" "ractive-nav" {tutorials:(\x -> {name: fromCharCode <$> (filter onlyNums $ toChars x)}) <$> keys tutorials}
   flip (Ract.on "loadtutorial") r $ \r ev -> do
-    launch $ fromMaybe errorTutorial $ flip lookup tutorials $ "tut" ++ ev.context.name
+    (launch $ fromMaybe errorTutorial $ flip lookup tutorials $ "tut" ++ ev.context.name)
     trace "onLoadTutorial!"
   trace "Initialization done"
     where
       errorTutorial = Tutorial "error" (\_ -> ContT \_ -> trace "ERROR loading tutorial")
       onlyNums n = if (n >= 48 && n <= 57) then true else false
 
-main = init mapOfTutorials
+main = initTutorials mapOfTutorials
