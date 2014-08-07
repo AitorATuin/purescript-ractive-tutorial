@@ -27,7 +27,8 @@
     "purescript-http": "~0.1.1",
     "purescript-maps": "~0.0.4",
     "purescript-strings": "~0.2.1",
-    "purescript-ractive": "git@github.com:AitorATuin/purescript-ractive.git"
+    "purescript-ractive": "git@github.com:AitorATuin/purescript-ractive.git",
+    "purescript-simple-dom": "git://github.com/aktowns/purescript-simple-dom.git"
   },
   "devDependencies": {
     "purescript-math": "*",
