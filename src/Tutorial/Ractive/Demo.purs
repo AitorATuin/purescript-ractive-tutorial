@@ -15,7 +15,7 @@ import Tutorial.Ractive
 import Data.Array (filter, map)
 import Data.String (fromCharCode)
 import Data.DOM.Simple.Window (globalWindow, document)
-import Data.DOM.Simple.Element (querySelector, classToggle)
+import Data.DOM.Simple.Element (querySelector, classAdd)
 import Data.DOM.Simple.Events (addEventListener)
 import Data.DOM.Simple.Document
 import qualified Data.DOM.Simple.Types as DT
@@ -61,14 +61,19 @@ loadTutorial :: forall e. TutorialConfig -> Unit -> ContT Unit (Eff (ractiveM::R
 loadTutorial config = outputPartialTut config.outputTemplate >=>
   contentPartialTut config.contentTemplate
 
+-- TODO: Manage error in closeOutputBtn.
 setOutputCloseButton :: forall e. Unit -> ContT Unit (Eff (trace::Trace,dom::DT.DOM|e)) Unit
 setOutputCloseButton = \_ -> ContT \_ -> do
   doc <- document globalWindow
   closeOutputBtn <- querySelector "#output-btn-close" doc
   outputPanel <- querySelector "#output" doc
-  flip (addEventListener "click") closeOutputBtn \ev -> do
-    classToggle "hidden" outputPanel
-    trace "Cerrando ventana!"
+  fromMaybe errorCloseEvent $ pure addCloseEvent <*> closeOutputBtn <*> outputPanel
+  where
+    addCloseEvent btn panel = flip (addEventListener "click") btn \ev -> do
+      classAdd "hidden" panel
+    errorCloseEvent = do
+      trace "setOutputCloseButton::Error setting `close` event for output panel close button."
+      trace "One or both selectors failed!"
 
 launch :: forall e. Tutorial Unit (xhr :: XHR, trace :: Trace, ractiveM :: Ract.RactiveM, dom :: DT.DOM | e) -> Eff (xhr :: XHR, trace :: Trace, ractiveM :: Ract.RactiveM, dom::DT.DOM| e) Unit
 launch (Tutorial name tutorialF) = runContT (executeTutorial unit) $ \r ->

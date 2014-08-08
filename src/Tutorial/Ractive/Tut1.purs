@@ -7,7 +7,20 @@ import Control.Monad.Eff.Ractive
 import Data.Tuple (zip)
 import Data.Array (range, length, map)
 import qualified Data.Map as M
+import Data.Maybe
 import qualified Data.String (length, charCodeAt) as S
+import Data.DOM.Simple.Window (globalWindow, document)
+import Data.DOM.Simple.Element (querySelector, classRemove)
+import qualified Data.DOM.Simple.Types as DT
+import Data.DOM.Simple.Document
+
+{-
+ - TODO:
+ -  + Now, the output panel HTMLElement is created in each hooked fn, we need
+ -    to be able to avoid all the code repeated due to that task
+ -
+ -
+ -}
 
 toChars :: String -> [Number]
 toChars str = _toChars (S.length str) str []
@@ -51,11 +64,14 @@ tutorial1 = Tutorial "tut1" tutorial1Fn
 
 -- Rerenders a partial using a 'flag'.
 --   + see: https://github.com/ractivejs/ractive/issues/236
-tutorial1Run1 :: TutorialPartials -> Ractive -> Event -> Eff (trace::Trace,ractiveM::RactiveM) Unit
+tutorial1Run1 :: TutorialPartials -> Ractive -> Event -> Eff (dom::DT.DOM,trace::Trace,ractiveM::RactiveM) Unit
 tutorial1Run1 partials r event = do
   set "showOutput" false r
   setPartial "outputP" partials.outputP r
   set "showOutput" true r
+  doc <- document globalWindow
+  panel <- querySelector "#output" doc
+  fromMaybe (trace "DDDD") $ Just (classRemove "hidden") <*> panel
 
 tutorial1Fn :: TutorialFn
 tutorial1Fn partials = ContT \next -> do
@@ -72,12 +88,18 @@ tutorial2Run1 partials r event = do
   set "greetings" "Hej, hej" r
   setPartial "outputP" partials.outputP r
   set "showOutput" true r
+  doc <- document globalWindow
+  panel <- querySelector "#output" doc
+  fromMaybe (trace "DDDD") $ Just (classRemove "hidden") <*> panel
 
 tutorial2Run2 partials r event = do
   set "showOutput" false r
   set "name" "Mundo" r
   set "greetings" "Hola" r
   set "showOutput" true r
+  doc <- document globalWindow
+  panel <- querySelector "#output" doc
+  fromMaybe (trace "DDDD") $ Just (classRemove "hidden") <*> panel
 
 tutorial2Fn :: TutorialFn
 tutorial2Fn partials = ContT \next -> do
