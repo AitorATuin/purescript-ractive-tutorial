@@ -10152,9 +10152,9 @@ PS.Tutorial_Ractive_Demo = (function () {
     var Data_DOM_Simple_Window = PS.Data_DOM_Simple_Window;
     var Data_DOM_Simple_Document = PS.Data_DOM_Simple_Document;
     var Data_Maybe = PS.Data_Maybe;
-    var Control_Monad_Eff_Ractive = PS.Control_Monad_Eff_Ractive;
     var Data_Traversable = PS.Data_Traversable;
     var Tutorial_Ractive = PS.Tutorial_Ractive;
+    var Control_Monad_Eff_Ractive = PS.Control_Monad_Eff_Ractive;
     var Network_XHR = PS.Network_XHR;
     var Control_Bind = PS.Control_Bind;
     var Data_Array = PS.Data_Array;
@@ -10221,10 +10221,7 @@ PS.Tutorial_Ractive_Demo = (function () {
                                 var _93 = Data_DOM_Simple_Window.document(Data_DOM_Simple_Window.htmlWindow({}))(Data_DOM_Simple_Window.globalWindow)();
                                 var _92 = Data_DOM_Simple_Element.querySelector(Data_DOM_Simple_Document.htmlDocumentElement({}))("#output")(_93)();
                                 Data_Maybe.fromMaybe(Debug_Trace.trace("Error"))(Prelude["<*>"](Data_Maybe.applyMaybe({}))(new Data_Maybe.Just(Data_DOM_Simple_Element.classRemove(Data_DOM_Simple_Element.htmlElement({}))("hidden")))(_92))();
-                                var __1 = Control_Monad_Eff_Ractive.set("showOutput")(false)(r)();
-                                var __2 = Control_Monad_Eff_Ractive.setPartial("outputP")(partials.outputP)(r)();
-                                var __3 = fn(r)(ev)();
-                                return Control_Monad_Eff_Ractive.set("showOutput")(true)(r)();
+                                return fn(r)(ev)();
                             };
                         };
                     };
@@ -10282,6 +10279,9 @@ PS.Tutorial_Ractive_Demo = (function () {
                         data: {}
                     })();
                     prepareTutorial(partials)(_94)(tutorial.hooks)();
+                    var __1 = Control_Monad_Eff_Ractive.set("showOutput")(false)(_94)();
+                    var __2 = Control_Monad_Eff_Ractive.setPartial("outputP")(partials.outputP)(_94)();
+                    var __3 = Control_Monad_Eff_Ractive.set("showOutput")(true)(_94)();
                     return next(Prelude.unit)();
                 };
             };

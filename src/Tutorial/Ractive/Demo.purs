@@ -90,10 +90,7 @@ prepareTutorial partials ractive hooks = traverse (\(Hook event fn) -> Ract.on e
       doc <- document globalWindow
       panel <- querySelector "#output" doc
       fromMaybe (trace "Error") $ Just (classRemove "hidden") <*> panel
-      Ract.set "showOutput" false r
-      Ract.setPartial "outputP" partials.outputP r
       fn r ev
-      Ract.set "showOutput" true r
 
 launch :: forall e. Tutorial -> Eff (xhr :: XHR, trace :: Trace, ractiveM :: Ract.RactiveM, dom::DT.DOM| e) Unit
 launch tutorial = runContT (executeTutorial unit) $ \r ->
@@ -103,6 +100,9 @@ launch tutorial = runContT (executeTutorial unit) $ \r ->
     createRactive partials = ContT \next -> do
       r <- Ract.ractiveFromData {template:ractiveTemplate, el:ractiveElement, partials:partials, "data":{}}
       prepareTutorial partials r tutorial.hooks
+      Ract.set "showOutput" false r
+      Ract.setPartial "outputP" partials.outputP r
+      Ract.set "showOutput" true r
       next unit
 
 initTutorials :: forall e. Map String Tutorial -> Eff (ractiveM::Ract.RactiveM,trace::Trace,dom::DT.DOM|e) Unit
