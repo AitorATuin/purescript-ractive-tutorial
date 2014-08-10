@@ -1,24 +1,29 @@
 <section><h1 id="tunning-our-great-message-to-the-world-">Tunning our great message to the world!</h1>
 <hr>
-<hr>
-<p>We are cool enough, we can show dynamically a nice greeting to everyone, but it would be nicer if spanish people could understand us when being polite.</p>
+<p>We are cool enough, we can show a nice greeting to everyone, but it would be nicer if spanish people could understand us when being polite.</p>
 <p>That&#39;s what we are going to do now, we are going to change the content of our message.</p>
+<h3 id="creating-a-dynamic-template-and-filling-it-with-some-data">Creating a dynamic template and filling it with some data</h3>
 <p>The first thing to do is to change our beautiful but static template with something like this:</p>
 <p>{{=&lt;% %&gt;=}}</p>
-<pre><code class="lang-html">&lt;h2 class=&quot;hello&quot;&gt;{{greetings}} {{name}}&lt;/h2&gt;</code></pre>
+<pre><code class="lang-html">&lt;h2 class=&quot;hello&quot;&gt;{{greeting}} {{name}}&lt;/h2&gt;</code></pre>
 <p>&lt;%={{ }}=%&gt;</p>
 <p>Good! We have created two mustache delimiters which will be binded to the data in our ractive object.</p>
-<p>Lets use this template to show our old but remarkable message.</p>
+<p>Lets use this template to show our old but remarkable message first.</p>
 <p>The <strong>PureScript</strong> snippet to do this is the following:</p>
-<pre><code class="lang-haskell">import Control.Eff.Ractive
+<pre><code class="lang-javascript">import Control.Eff.Ractive
 
 main :: Eff (ractiveM :: RactiveM) Unit
 main = ractive &quot;template&quot; &quot;#document&quot; {greeting: &quot;Hej, hej&quot;, name: &quot;Värld!&quot;}</code></pre>
 <button class="btn btn-primary" on-click="run1">run</button>
 
-<p>Ok, now we have the same behavior than before but being dynamic, we can change the value of <code>greeting</code> and <code>name</code> and ractive will update the view.</p>
-<p>Let&#39;s see how to do that in <strong>PureScript</strong>:</p>
-<pre><code class="lang-haskell">changeGreeting :: Ractive -&gt; String -&gt; String -&gt; Eff (ractiveM :: RactiveM) Unit
+
+<p>Ok, now we have the same behavior than before but being dynamic, we have created a new <em>Ractive</em> object and we set the value of our
+two mustache delimiters (<em>name</em> and <em>gretting</em>). So we have (at this point) the same behavior than in the previous tutorial but with the
+improvement that we can easily change the contents of any of the mustaches in the template.</p>
+<h3 id="change-the-data-in-our-template">Change the data in our template</h3>
+<p>Let&#39;s see how to change the data binded in the template.</p>
+<p>We want now to show a greeting message understandable for spanish people, so let&#39;s change the contents of our <em>Ractive&#39;s Data</em>.</p>
+<pre><code class="lang-haskell">changeGreeting :: Ractive -&gt; Eff (ractiveM :: RactiveM) Unit
 changeGreeting ractive = do
   set &quot;greeting&quot; &quot;Hola&quot; ractive
   set &quot;name&quot; &quot;Mundo&quot; ractive</code></pre>
@@ -26,25 +31,29 @@ changeGreeting ractive = do
 <p>Try to run that function!</p>
 <button class="btn btn-primary" on-click="run2">run</button>
 
+<p>Nice! We can change now the contents, but we are allow also to change the style of our templates, let&#39;s do that.</p>
+<p>First, we need to change the template to something like this:</p>
+<p>{{=&lt;% %&gt;=}}</p>
+<pre><code class="lang-html">&lt;h2 style=&#39;color: {{color}}; font-size: {{size}}em; font-family: {{font}};&#39;&gt;
+  {{greeting}} {{name}}!
+&lt;/h2&gt;</code></pre>
+<p>&lt;%={{ }}=%&gt;</p>
+<p>and then we can change the value of those mustaches styling the text as normal:</p>
+<pre><code class="lang-haskell">changeStyle :: Ractive -&gt; Eff (ractiveM :: RactiveM) Unit
+changeStyle ractive = do
+  set &quot;color&quot; &quot;purple&quot; ractive
+  set &quot;font&quot; &quot;Georgia&quot; ractive
+  set &quot;size&quot; 4 ractive</code></pre>
+<button class="btn btn-primary" on-click="run3">run</button>
+
 <hr>
-<h3 id="the-code-in-more-detail-">The code in more detail!</h3>
-<hr>
-<p>Just like we did before with the first example, let&#39;s try to explain that small chunk of <strong>purescript</strong> code.</p>
-<ul>
-<li>First we load the module with <code>import Control.Eff.Ractive</code></li>
-<li>Then, we define function which the only interesting thing that it does is to create a new ractive object.
-To create it we pass three arguments to the <em>ractive</em> function, the first one is the template we want to use (our nice greeting here),
-the second one is the element where we want to show the message (all the element&#39;s children will be replaced!) and finally an object
-with the data we want to bind (more on this later.)</li>
-<li>Please note that creating an object is a side-effect, so not allowed in a pure functional language like <strong>purescript</strong>,
-that&#39;s the reason why <em>ractive</em> function returns an <em>forall eff. Eff(ractiveM :: RactiveM) Ractive</em>.
-See this <a href="http://www.purescript.org/posts/Eff-Monad/" title="Handling Native Effects with the Eff Monad">post</a> for a more detailed explanation.</li>
-</ul>
-<hr>
-<h3 id="functions-involved-here-and-types-">Functions involved here (and types)</h3>
-<hr>
-<p>Let&#39;s see the only function we have used here: <em>ractive</em> and the type of it (we are now functional programmers so we really care about types!)</p>
-<ul>
-<li><strong><em>ractive</em></strong> :: forall a eff. String -&gt; String -&gt; a -&gt; Eff (ractiveM :: RactiveM | e)</li>
-</ul>
+<p>Ok, now we know one more function to use with our <em>Ractive</em> objects:</p>
+<pre><code class="lang-haskell">set :: forall a eff. String -&gt; a -&gt; Ractive -&gt; Eff (ractiveM::RactiveM | e) Unit</code></pre>
+<p>Setting a new data value is also computation with side-effects so we get an <em>Eff</em> monad when running the <code>set</code> function.</p>
+<p>The <em>first parameter</em> (<code>String</code>) is the property (or field) in our <em>Ractive&#39;s Data</em> that we want to set.</p>
+<p>The <em>second parameter</em> is the value we want to set to the property.</p>
+<h3 id="summary">Summary</h3>
+<p>Now we know two functions:</p>
+<pre><code class="lang-haskell">ractive :: forall a eff. String -&gt; String -&gt; a -&gt; Eff (ractiveM :: RactiveM | eff) Ractive</code></pre>
+<pre><code class="lang-haskell">set :: forall a eff. String -&gt; a -&gt; Eff (ractiveM :: RactiveM | eff) Unit</code></pre>
 </section>

@@ -42,13 +42,20 @@ tutorial1 = {name: "tut1", hooks: [Hook "run1" tutorial1Run1]}
 -- Tutorial 2
 tutorial2Run1 r event = do
   set "name" "Värld" r
-  set "greetings" "Hej, hej" r
+  set "greeting" "Hej, hej" r
 
 tutorial2Run2 r event = do
   set "name" "Mundo" r
-  set "greetings" "Hola" r
+  set "greeting" "Hola" r
 
-tutorial2 = {name: "tut2", hooks: [Hook "run1" tutorial2Run1, Hook "run2" tutorial2Run1 >> tutorial2Run2]}
+tutorial2Run3 r event = do
+  set "color" "purple" r
+  set "size" 4 r
+  set "font" "Georgia" r
+
+tutorial2 = {name: "tut2", hooks: [Hook "run1" tutorial2Run1,
+  Hook "run2" tutorial2Run2,
+  Hook "run3" tutorial2Run3]}
 
 listOfTutorials :: [Tutorial]
 listOfTutorials = [tutorial1,tutorial2]

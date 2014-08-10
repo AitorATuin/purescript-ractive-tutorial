@@ -7937,11 +7937,20 @@ PS.Tutorial_Ractive = (function () {
             return new Hook(value0, value1);
         };
     };
+    var tutorial2Run3 = function (r) {
+        return function (event) {
+            return function __do() {
+                Control_Monad_Eff_Ractive.set("color")("purple")(r)();
+                var __1 = Control_Monad_Eff_Ractive.set("size")(4)(r)();
+                return Control_Monad_Eff_Ractive.set("font")("Georgia")(r)();
+            };
+        };
+    };
     var tutorial2Run2 = function (r) {
         return function (event) {
             return function __do() {
                 Control_Monad_Eff_Ractive.set("name")("Mundo")(r)();
-                return Control_Monad_Eff_Ractive.set("greetings")("Hola")(r)();
+                return Control_Monad_Eff_Ractive.set("greeting")("Hola")(r)();
             };
         };
     };
@@ -7949,13 +7958,13 @@ PS.Tutorial_Ractive = (function () {
         return function (event) {
             return function __do() {
                 Control_Monad_Eff_Ractive.set("name")("Värld")(r)();
-                return Control_Monad_Eff_Ractive.set("greetings")("Hej, hej")(r)();
+                return Control_Monad_Eff_Ractive.set("greeting")("Hej, hej")(r)();
             };
         };
     };
     var tutorial2 = {
         name: "tut2", 
-        hooks: [ new Hook("run1", tutorial2Run1), new Hook("run2", tutorial2Run2) ]
+        hooks: [ new Hook("run1", tutorial2Run1), new Hook("run2", tutorial2Run2), new Hook("run3", tutorial2Run3) ]
     };
     var tutorial1Run1 = function (r) {
         return function (event) {
@@ -8002,6 +8011,7 @@ PS.Tutorial_Ractive = (function () {
         mapOfTutorials: mapOfTutorials, 
         listOfTutorials: listOfTutorials, 
         tutorial2: tutorial2, 
+        tutorial2Run3: tutorial2Run3, 
         tutorial2Run2: tutorial2Run2, 
         tutorial2Run1: tutorial2Run1, 
         tutorial1: tutorial1, 
