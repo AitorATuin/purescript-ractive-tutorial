@@ -1,7 +1,6 @@
-<section><h1 id="welcome-to-tutorial-1-">Welcome to tutorial 1!</h1>
+<section><h1 id="first-steps-with-purescript-and-ractive">First steps with PureScript and Ractive</h1>
 <hr>
-<hr>
-<p>In this tutorial we are going to see the most basic and straightforward use of <code>purescript-ractive</code>, we are use it
+<p>In this tutorial we are going to see the most basic and straightforward use of <code>purescript-ractive</code>, we are going to use it
 just to put some content in our page.</p>
 <p>The content we want to show is this astounding greet:</p>
 <pre><code class="lang-html">&lt;h2 class=&quot;hello&quot;&gt;Hej, hej Värld!&lt;/h2&gt;</code></pre>
@@ -13,25 +12,26 @@ main :: Eff (ractiveM :: RactiveM) Unit
 main = ractive &quot;template&quot; &quot;#document&quot; {}</code></pre>
 <button class="btn btn-primary" on-click="run1">run</button>
 
-<hr>
 <h3 id="the-code-in-more-detail-">The code in more detail!</h3>
 <hr>
-<p>A short explanation about the code above;</p>
-<ul>
-<li>First we load the module with <code>import Control.Eff.Ractive</code></li>
-<li>Then, we define function which the only interesting thing that it does is to create a new ractive object.
-To create it we pass three arguments to the <em>ractive</em> function, the first one is the template we want to use (our nice greeting here),
-the second one is the element where we want to show the message (all the element&#39;s children will be replaced!) and finally an object
-with the data we want to bind (more on this later.)</li>
-<li>Please note that creating an object is a side-effect, so not allowed in a pure functional language like <strong>purescript</strong>,
-that&#39;s the reason why <em>ractive</em> function returns an <em>forall eff. Eff(ractiveM :: RactiveM) Ractive</em>.
-See this <a href="http://www.purescript.org/posts/Eff-Monad/" title="Handling Native Effects with the Eff Monad">post</a> for a more detailed explanation.</li>
-</ul>
+<p>There is not very much to explain here but anyway let&#39;s take a look to the small code involved.</p>
+<p>Firstly we load the module with <code>import Control.Eff.Ractive</code>, this will allow us to have all the functions defined in <strong>Ractive</strong> module in scope,
+ready to be used.</p>
+<p>Secondly we define the <strong>main</strong> function, this function creates a new <strong>Ractive</strong> object which is ready to be used.
+To create it we pass three arguments to the <em>ractive</em> function, the ractive function is defined in <code>Control.Eff.Ractive</code> and has this
+signature:</p>
+<pre><code class="lang-haskell">ractive :: forall a eff. String -&gt; String -&gt; a -&gt; Eff (ractiveM :: RactiveM | eff)</code></pre>
+<p>To create it we pass three arguments to the <em>ractive</em> function, the <em>first one is the template we want to use</em> (our nice greeting here),
+the <em>second one is the element</em> where we want to show the message (all the element&#39;s children will be replaced!) and <em>finally an object
+with the data</em> we want to bind (more on this later.)</p>
+<blockquote>
+<p>Please note that creating an object is a side-effect, so not allowed in a pure functional language like <strong>PureScript</strong>,
+that&#39;s the reason why <em>ractive</em> function returns an <em>Eff monad</em>.
+See this <a href="http://www.purescript.org/posts/Eff-Monad/" title="Handling Native Effects with the Eff Monad">post</a> for a more detailed explanation about
+the <em>Eff</em> monad in <em>PureScript</em>.</p>
+</blockquote>
+<h3 id="summary">Summary</h3>
 <hr>
-<h3 id="functions-involved-here-and-types-">Functions involved here (and types)</h3>
-<hr>
-<p>Let&#39;s see the only function we have used here: <em>ractive</em> and the type of it (we are now functional programmers so we really care about types!)</p>
-<ul>
-<li><strong><em>ractive</em></strong> :: forall a eff. String -&gt; String -&gt; a -&gt; Eff (ractiveM :: RactiveM | e)</li>
-</ul>
+<p>Let&#39;s see the only function we have used here: <em>ractive</em> and its signature (we are now functional programmers so we really care about types!)</p>
+<pre><code class="lang-haskell">ractive :: forall a eff. String -&gt; String -&gt; a -&gt; Eff (ractiveM :: RactiveM | eff) Ractive</code></pre>
 </section>
