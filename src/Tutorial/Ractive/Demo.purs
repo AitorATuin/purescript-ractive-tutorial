@@ -8,16 +8,17 @@ import Control.Bind ((>=>))
 import Control.Monad.Trans
 import Control.Monad.Cont.Trans
 import Data.Maybe
-import Data.Map (lookup, keys)
+import Data.Map (lookup, keys, Map(..))
 import Network.HTTP
 import Network.XHR
 import Tutorial.Ractive
 import Data.Array (filter, map)
 import Data.String (fromCharCode)
 import Data.DOM.Simple.Window (globalWindow, document)
-import Data.DOM.Simple.Element (querySelector, classAdd)
+import Data.DOM.Simple.Element (querySelector, classAdd, classRemove)
 import Data.DOM.Simple.Events (addEventListener)
 import Data.DOM.Simple.Document
+import Data.Traversable
 import qualified Data.DOM.Simple.Types as DT
 
 tutorialPartials :: Template -> Template -> TutorialPartials
@@ -28,6 +29,13 @@ type TutorialConfig = {
   outputTemplate :: URI,
   element :: String,
   template :: String}
+
+type TutorialPartials = {
+  outputP  :: Template,
+  contentP :: Template}
+
+ractiveTemplate = "#ractive-template"
+ractiveElement = "ractive-element"
 
 template :: String -> String -> URI -> URI -> TutorialConfig
 template element template baseUri dir = {contentTemplate: content, outputTemplate: output, element: element, template: template}
@@ -75,20 +83,37 @@ setOutputCloseButton = \_ -> ContT \_ -> do
       trace "setOutputCloseButton::Error setting `close` event for output panel close button."
       trace "One or both selectors failed!"
 
-launch :: forall e. Tutorial Unit (xhr :: XHR, trace :: Trace, ractiveM :: Ract.RactiveM, dom :: DT.DOM | e) -> Eff (xhr :: XHR, trace :: Trace, ractiveM :: Ract.RactiveM, dom::DT.DOM| e) Unit
-launch (Tutorial name tutorialF) = runContT (executeTutorial unit) $ \r ->
+prepareTutorial :: forall e. TutorialPartials -> Ract.Ractive -> [HookTutorial] -> Eff (ractiveM::Ract.RactiveM|e) [Ract.Ractive]
+prepareTutorial partials ractive hooks = traverse (\(Hook event fn) -> Ract.on event (wrapperFn fn) ractive) hooks
+  where
+    wrapperFn fn = \r ev -> do
+      doc <- document globalWindow
+      panel <- querySelector "#output" doc
+      fromMaybe (trace "Error") $ Just (classRemove "hidden") <*> panel
+      Ract.set "showOutput" false r
+      Ract.setPartial "outputP" partials.outputP r
+      fn r ev
+      Ract.set "showOutput" true r
+
+launch :: forall e. Tutorial -> Eff (xhr :: XHR, trace :: Trace, ractiveM :: Ract.RactiveM, dom::DT.DOM| e) Unit
+launch tutorial = runContT (executeTutorial unit) $ \r ->
   trace "DONE"
   where
-    executeTutorial = loadTutorial (templateTuto name) >=> tutorialF >=> setOutputCloseButton
+    executeTutorial = loadTutorial (templateTuto tutorial.name) >=> createRactive >=> setOutputCloseButton
+    createRactive partials = ContT \next -> do
+      r <- Ract.ractiveFromData {template:ractiveTemplate, el:ractiveElement, partials:partials, "data":{}}
+      prepareTutorial partials r tutorial.hooks
+      next unit
 
+initTutorials :: forall e. Map String Tutorial -> Eff (ractiveM::Ract.RactiveM,trace::Trace,dom::DT.DOM|e) Unit
 initTutorials tutorials = do
   r <- Ract.ractive "#ractive-nav-template" "ractive-nav" {tutorials:(\x -> {name: fromCharCode <$> (filter onlyNums $ toChars x)}) <$> keys tutorials}
   flip (Ract.on "loadtutorial") r $ \r ev -> do
-    (launch $ fromMaybe errorTutorial $ flip lookup tutorials $ "tut" ++ ev.context.name)
-    trace "onLoadTutorial!"
+    let tutorial = (flip lookup tutorials $ "tut" ++ ev.context.name)
+    fromMaybe (trace "Error loading tutorial") $ launch <$> tutorial -- >>= (\t -> Just $ launch t)
   trace "Initialization done"
     where
-      errorTutorial = Tutorial "error" (\_ -> ContT \_ -> trace "ERROR loading tutorial")
       onlyNums n = if (n >= 48 && n <= 57) then true else false
 
+--main :: Eff (trace :: Trace, ractiveM :: Ract.RactiveM,dom::DT.DOM) Unit
 main = initTutorials mapOfTutorials

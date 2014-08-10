@@ -4,7 +4,7 @@ import Debug.Trace
 import Control.Monad.Cont.Trans
 import Control.Monad.Eff
 import Control.Monad.Eff.Ractive
-import Data.Tuple (zip)
+import Data.Tuple (zip,Tuple(..))
 import Data.Array (range, length, map)
 import qualified Data.Map as M
 import Data.Maybe
@@ -14,14 +14,6 @@ import Data.DOM.Simple.Element (querySelector, classRemove)
 import qualified Data.DOM.Simple.Types as DT
 import Data.DOM.Simple.Document
 
-{-
- - TODO:
- -  + Now, the output panel HTMLElement is created in each hooked fn, we need
- -    to be able to avoid all the code repeated due to that task
- -
- -
- -}
-
 toChars :: String -> [Number]
 toChars str = _toChars (S.length str) str []
   where
@@ -29,89 +21,39 @@ toChars str = _toChars (S.length str) str []
     _toChars 0 _ xs = xs
     _toChars n str xs = _toChars (n-1) str ((S.charCodeAt (n-1) str):xs)
 
-data Tutorial a eff = Tutorial String (TutorialPartials -> ContT Unit (Eff eff) a)
-tutorialName :: forall a e. Tutorial a  e -> String
-tutorialName (Tutorial name _) = name
-tutorialFn :: forall a e. Tutorial a e -> TutorialPartials -> ContT Unit (Eff e) a
-tutorialFn (Tutorial _ fn) = fn
+data Hook e = Hook String (Ractive -> Event -> Eff e Unit)
 
-type TutorialFn = forall e. TutorialPartials -> ContT Unit (Eff (trace :: Trace, ractiveM :: RactiveM | e)) Unit
-type TutorialTyp = forall e. Tutorial Unit (trace :: Trace, ractiveM :: RactiveM | e)
+type TutorialData e = {name :: String,
+  hooks :: [Hook e]}
+
 
 type Template = String
 
-type TutorialPartials = {
-  outputP  :: Template,
-  contentP :: Template}
-
-ractiveTemplate = "#ractive-template"
-ractiveElement = "ractive-element"
-
-createRactive :: forall a. TutorialPartials -> { |a}  -> RactiveEff Ractive
-createRactive partials d = ractiveFromData {template: ractiveTemplate,
-  el: ractiveElement,
-  partials: partials,
-  "data": d}
-
-mapOfTutorials :: forall e. M.Map String  (Tutorial Unit (trace :: Trace, ractiveM :: RactiveM | e))
-mapOfTutorials = M.fromList $ flip zip listOfTutorials $ tutName <$> listOfTutorials
-  where
-    tutName (Tutorial name f) = name
+type EffectsTutorial = (trace::Trace,dom::DT.DOM,ractiveM::RactiveM)
+type EffTutorial = Eff EffectsTutorial Unit
+type HookTutorial = Hook EffectsTutorial
+type Tutorial = TutorialData EffectsTutorial
 
 -- Tutorial 1
-tutorial1 :: TutorialTyp
-tutorial1 = Tutorial "tut1" tutorial1Fn
+tutorial1Run1 r event = returnE unit
 
--- Rerenders a partial using a 'flag'.
---   + see: https://github.com/ractivejs/ractive/issues/236
-tutorial1Run1 :: TutorialPartials -> Ractive -> Event -> Eff (dom::DT.DOM,trace::Trace,ractiveM::RactiveM) Unit
-tutorial1Run1 partials r event = do
-  set "showOutput" false r
-  setPartial "outputP" partials.outputP r
-  set "showOutput" true r
-  doc <- document globalWindow
-  panel <- querySelector "#output" doc
-  fromMaybe (trace "DDDD") $ Just (classRemove "hidden") <*> panel
-
-tutorial1Fn :: TutorialFn
-tutorial1Fn partials = ContT \next -> do
-  trace "Tutorial 1 starting"
-  r <- createRactive {outputP: "", contentP: partials.contentP} {}
-  on "run1" (tutorial1Run1 partials) r
-  trace "Tutorial 1 Done"
-  next unit
+tutorial1 = {name: "tut1", hooks: [Hook "run1" tutorial1Run1]}
 
 -- Tutorial 2
-tutorial2Run1 partials r event = do
-  set "showOutput" false r
+tutorial2Run1 r event = do
   set "name" "Värld" r
   set "greetings" "Hej, hej" r
-  setPartial "outputP" partials.outputP r
-  set "showOutput" true r
-  doc <- document globalWindow
-  panel <- querySelector "#output" doc
-  fromMaybe (trace "DDDD") $ Just (classRemove "hidden") <*> panel
 
-tutorial2Run2 partials r event = do
-  set "showOutput" false r
+tutorial2Run2 r event = do
   set "name" "Mundo" r
   set "greetings" "Hola" r
-  set "showOutput" true r
-  doc <- document globalWindow
-  panel <- querySelector "#output" doc
-  fromMaybe (trace "DDDD") $ Just (classRemove "hidden") <*> panel
 
-tutorial2Fn :: TutorialFn
-tutorial2Fn partials = ContT \next -> do
-  trace "Tutorial 2 Starting"
-  r <- createRactive partials {name: "Värld", greetings:"Hej, hej"}
-  on "run1" (tutorial2Run1 partials) r
-  on "run2" (tutorial2Run2 partials) r
-  trace "Tutorial 2 Done"
-  next unit
+tutorial2 = {name: "tut2", hooks: [Hook "run1" tutorial2Run1, Hook "run2" tutorial2Run1 >> tutorial2Run2]}
 
-tutorial2 = Tutorial "tut2" tutorial2Fn
-
--- List of Tutorials
-listOfTutorials :: forall e. [Tutorial Unit (trace :: Trace, ractiveM :: RactiveM | e)]
-listOfTutorials = [tutorial1, tutorial2]
+listOfTutorials :: [Tutorial]
+listOfTutorials = [tutorial1,tutorial2]
+mapOfTutorials :: M.Map String Tutorial
+mapOfTutorials = M.fromList $ tutName <$> listOfTutorials
+  where
+  --  tutName :: forall e. Tutorial e -> Tuple String (Tutorial e)
+    tutName tutorial = Tuple tutorial.name tutorial
